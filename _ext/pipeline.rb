@@ -28,8 +28,8 @@ Awestruct::Extensions::Pipeline.new do
   github_collector = Identities::GitHub::Collector.new(:auth_file => '.github-auth', :teams =>
     [
       {:id => 146647, :name => 'speaker'},
-      {:id => 125938, :name => 'translator'},
-      {:id => 146643, :name => 'core'}
+      #{:id => 125938, :name => 'translator'},
+      #{:id => 146643, :name => 'core'}
     ]
   )
 
