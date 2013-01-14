@@ -153,8 +153,8 @@ $(function () {
       build_results = feeds;
     }, 50);
 
-    $.getJSON("https://api.github.com/orgs/arquillian/repos?callback=?", loadRepos);
-    $.getJSON("https://api.github.com/orgs/arquillian/members?callback=?", loadMembers);
+    $.getJSON("https://user:password@api.github.com/orgs/arquillian/repos?callback=?", loadRepos);
+    $.getJSON("https://user:password@api.github.com/orgs/arquillian/members?callback=?", loadMembers);
 });
         </script>
     </head>

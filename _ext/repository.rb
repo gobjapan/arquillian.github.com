@@ -122,7 +122,7 @@ module Awestruct
           @repositories.map {|r|
             r.owner if r.host == 'github.com'
           }.uniq.each {|org_name|
-            org_repos_data = RestClient.get "https://api.github.com/orgs/#{org_name}/repos", :accept => 'application/json'
+            org_repos_data = RestClient.get "https://user:password@api.github.com/orgs/#{org_name}/repos", :accept => 'application/json'
             @repositories.each {|r|
               #repo_data = org_repos_data.select {|c| r.owner == org_name and r.host == 'github.com' and c['name'] == r.path}
               repo_data = org_repos_data.select {|c| r.clone_url.eql? c['git_url']}
