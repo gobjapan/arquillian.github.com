@@ -1,0 +1,91 @@
+Arquillian Warp Documentation
+=============================
+
+Lukas Fryc <lfryc@redhat.com>
+
+Concepts
+--------
+
+Arquillian Warp fills the void between client-side and server-side testing.
+
+Using Warp, you can initiate an HTTP request using a client-side testing tool such as WebDriver and, in the same request cycle, execute in-container server-side tests. This powerful combination lets you cover integration across client and server.
+
+The Warp effectively removes a need for mocking and opens new possibilities for debugging.
+
+=== Lifecycle
+
+In order to hook into client-to-server communication, Warp puts a proxy server between them as illustrated on a image bellow.
+
+
+TODO diagram
+
+This proxy observes request incoming from the client and then enhances the request with the payload required for server's inspection (processed reffered to as piggy-backing on the request).
+
+Once the enhanced request enters a server, it is blocked by request filter and the description of inspection is registered in Arquillian system. The Warp's filter then handles the processing to the traditional request processing.
+
+During a requst processing lifecycle, the Warp listens for appropriate callbacks and as a response, it can execute arbitrary actions which inspects a state of the request context.
+
+To help with the full-featured verification, Warp's inspection process can leverage Arquillian's dependency injection system.
+
+Once the request is processed by the server, leading into committing response, Warp can collect a result of inspection and enhance a built response to the client (again using piggy-backing method).
+
+The Warp's proxy evaluates the response and either reports a failure (in case of server failure) or continues with execution of the test.
+
+=== Focus
+
+==== Cross-protocol
+
+Warp currently supports only HTTP protocol, but conceptually it can be used with any protocol where we are able to intercept client-to-server communication on both, the client and the server.
+
+==== Client-Side Testing Tools
+
+Warp supports any client-side tools if you are using them in a way that requests can be intercepted (in a case of HTTP protocol, you need to communicate through a proxy instead of direct communication with a server).
+
+The samples of such tools:
+
+* URL#getResourceAsAStream()
+* Apache HTTP Client
+* Selenium WebDriver
+
+Note: in order to use Warp, you should inject an @ArquillianResource URL, which points to the proxy automatically.
+
+==== Frameworks
+
+Warp currently focuses on frameworks based on Servlets API, but it provides special hooks and additiona support for:
+
+* JSF
+* JAX-RS (Rest)
+* Spring MVC
+
+== High-Level API
+
+The Warp requires two inputs from the user:
+
+* what activity should be done in order to trigger a request
+* how the server processing should be inspected
+
+This maps to the simplest possible high-level API:
+
+----
+Warp
+	.initiate(Activity)
+	.inspect(Inspection);
+----
+
+Note: the Warp may need to know what request should be inspected since the client may naturally fire more requests - thus this simple API will actually inject a first request (whatever it is). If you want to observe and inspect other particular request or you are dealing with instability, you should use 
+
+== Server Inspection
+
+== Dependency Injection
+
+== Request Groups
+
+== Request Observers
+
+== Anonymous/Inner Classes
+
+=== Serialization
+
+=== Extraction
+
+== Framework Extensions
