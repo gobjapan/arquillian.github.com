@@ -1,16 +1,64 @@
 Arquillian Warp Documentation
 =============================
-
 Lukas Fryc <lfryc@redhat.com>
+:toc:
 
-Concepts
---------
+== What is Warp?
 
 Arquillian Warp fills the void between client-side and server-side testing.
 
 Using Warp, you can initiate an HTTP request using a client-side testing tool such as WebDriver and, in the same request cycle, execute in-container server-side tests. This powerful combination lets you cover integration across client and server.
 
 The Warp effectively removes a need for mocking and opens new possibilities for debugging.
+
+
+== Where to Use Warp?
+
+Warp allows you to know as little or as much of the application under test as you want.
+
+=== Gray-box Testing
+
+Initially, Warp can be used from any black-box testing tool (like HttpClient, REST client, Selenium WebDriver, etc.). But it allows to hook into server request lifecycle and verify what happens inside the box (referred to as white-box testing). That is why we identify Warp as gray-box testing framework.
+
+____
+Allows you to test on whole scale of gray from white to black.
+____
+
+=== Integration Testing
+
+On a scale of granularity of a test, Warp fits the best integration level of testing with a overlap to functional testing. You can either test components, application API or functional behavior.
+
+=== Technology Independence
+
+No matter of client-side tool you use for emiting HTTP request or what server-side framework runs on a server, Warp allows you to assert and verify logic on a most appropriate place of client-server request lifecycle.
+
+=== Use Cases
+
+Using Warp is limited just by your imagination, as long as you have in mind facts we had described earlier.
+
+Just to note some specific use cases, Warp can:
+
+* send a payload to a server
+* verify an incoming request
+* assert a state of a server context
+* verify that given event was fired during request processing
+* verify a completed response
+* send a payload to a client
+
+=== Project Stage
+
+The Warp is good fit for basically any stage of a project:
+
+* prototyping (TDD)
+* legacy projects
+* issue reproduction
+* debugging issue
+
+Thanks to ability to bring a server arbitrary payload to a server and hook into server-lifecycle, we can use Warp in partially implemented projects. We needn't to have database layer implemented in order to test UI logic. This is especially useful for projects based on loosely coupled components (e.g. Java EE's CDI).
+
+Since we can use Warp and start with white-box testing, we can reproduce the issue on the level of application's interface (issue reproduction). Then we can dive deeper into internals of an application, which will not only allow us to reveal how it works, but also debug a system and assert a correct behavior.
+
+== Architecture
 
 === Lifecycle
 
