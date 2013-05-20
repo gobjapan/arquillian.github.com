@@ -20,10 +20,6 @@ Warp allows you to know as little or as much of the application under test as yo
 
 Initially, Warp can be used from any black-box testing tool (like HttpClient, REST client, Selenium WebDriver, etc.). But it allows to hook into server request lifecycle and verify what happens inside the box (referred to as white-box testing). That is why we identify Warp as gray-box testing framework.
 
-____
-Allows you to test on whole scale of gray from white to black.
-____
-
 === Integration Testing
 
 On a scale of granularity of a test, Warp fits the best integration level of testing with a overlap to functional testing. You can either test components, application API or functional behavior.
@@ -54,7 +50,7 @@ The Warp is good fit for basically any stage of a project:
 * issue reproduction
 * debugging issue
 
-Thanks to ability to bring a server arbitrary payload to a server and hook into server-lifecycle, we can use Warp in partially implemented projects. We needn't to have database layer implemented in order to test UI logic. This is especially useful for projects based on loosely coupled components (e.g. Java EE's CDI).
+Thanks to an ability to bring an arbitrary payload to a server and hook into server-lifecycle, we can use Warp in partially implemented projects. We needn't to have database layer implemented in order to test UI logic. This is especially useful for projects based on loosely coupled components (e.g. Java EE's CDI).
 
 Since we can use Warp and start with white-box testing, we can reproduce the issue on the level of application's interface (issue reproduction). Then we can dive deeper into internals of an application, which will not only allow us to reveal how it works, but also debug a system and assert a correct behavior.
 
@@ -70,25 +66,80 @@ Warp supports any client-side tools if you are using them in a way that requests
 
 The samples of such tools:
 
-* URL#getResourceAsAStream()
+* `URL#getResourceAsStream()`
 * Apache HTTP Client
 * Selenium WebDriver
 
-Note: in order to use Warp, you should inject an @ArquillianResource URL, which points to the proxy automatically.
+Note: in order to use Warp, you should inject an `@ArquillianResource` URL, which points to the proxy automatically.
 
 ==== Frameworks
 
-Warp currently focuses on frameworks based on Servlets API, but it provides special hooks and additiona support for:
+Warp currently focuses on frameworks based on Servlets API, but it provides special hooks and additional support for:
 
 * JSF
-* JAX-RS (Rest)
+* JAX-RS (REST)
 * Spring MVC
 
 == How to Use Warp?
 
 === Project Setup
 
-See README.md or Warp Guide
+==== Setting Up Maven Dependencies
+
+Following dependencies needs to be configured: Warp depchain (does contain support just for Servlets API)
+
+----
+<dependency>
+    <groupId>org.jboss.arquillian.extension</groupId>
+    <artifactId>arquillian-warp</artifactId>
+    <version>${version.warp}</version>
+    <type>pom</type>
+</dependency>
+----
+
+or JSF-specific binding:
+
+----
+<dependency>
+    <groupId>org.jboss.arquillian.extension</groupId>
+    <artifactId>arquillian-warp-jsf</artifactId>
+    <version>${version.warp}</version>
+</dependency>
+----
+
+==== Use Servlet Protocol
+
+In `arquillian.xml`:
+
+----
+<defaultProtocol type="Servlet 3.0"/>
+----
+
+==== Create a Test
+
+The test needs to be annotated with `@WarpTest` and needs to be run on a client (`@RunAsClient`).
+
+It needs to contain WAR deployment which will be testable:
+
+----
+@RunWith(Arquillian.class)
+@WarpTest
+@RunAsClient
+public class BasicTest {
+    
+    @Deployment(testable = true)
+    public static WebArchive deployment() {
+       ...
+    }
+
+    @Test
+    public void test() {
+      // now we can use Warp
+      Warp
+        ...
+    }
+}
+----
 
 === Warp API
 
@@ -101,11 +152,11 @@ That intuitively leads us to the simplest possible high-level API:
 
 ----
 Warp
-	.initiate(Activity)
-	.inspect(Inspection);
+  .initiate(Activity)
+  .inspect(Inspection);
 ----
 
-Note: This is so called single-request execution API. In this API first observed request is inspected.
+Note: This is so called single-request execution API. In this API a first observed request is inspected.
 
 The result of single-request execution API is an `Inspection` returned from a server:
 
@@ -118,7 +169,7 @@ CustomInspection result =
 
 === Activity
 
-The `Activity` is an manipulation with a client which leads to communication (emits HTTP request). You are unlimited in choices, but you should always use an URL provided by the Arquillian:
+The `Activity` is an manipulation with a client which leads to communication (emits a HTTP request). You are unlimited in tooling choices, but you should always use an URL provided by the Arquillian:
 
 ----
 @ArquillianResource
@@ -130,7 +181,7 @@ So we can e.g. use simplest possible Warp activity:
 ----
 Warp
   .initiate(new Activity() {
-    InputStream connection = contextPath.asInputStream();
+    InputStream connection = contextPath.getResourceAsStream();
     connection.open();
   }
 ----
@@ -140,28 +191,28 @@ You can use whatever tool you want here (e.g. HttpClient, Selenium WebDriver, et
 ----
 Warp
   .initiate(new Activity() {
-    webdriver.navigate().to(contextPath.toString);
+    webdriver.navigate().to(contextPath.toString());
   }
 ----
 
 === Request Observers
 
-Since HTTP clients can generally emit more than request at a time, we may need to limit a Warp what it will react on.
+Since HTTP clients can generally emit more than one request at a time, we may need to limit what will Warp react on.
 
 We can achieve that using Warp API extended for Request Observing:
 
 ----
 Warp
-	.initiate(Activity)
+  .initiate(Activity)
   .observe(Observer)
-	.inspect(Inspection);
+  .inspect(Inspection);
 ----
 
-In case of HTTP requests, we want to use `HttpObserver` specifically. We can implement at own or use predefined fluent API for observer specification:
+In case of HTTP requests, we want to use `HttpObserver` specifically. We can implement at own or use predefined fluent API for observer specification.
 
 ==== Fluent API for HTTP Request Observing
 
-In order to make the observing as accessible and readable as possible, we have prepared fluent API for request observer specification:
+In order to make observer definitions as accessible and readable as possible, there is fluent API for request observer specification:
 
 ----
 import static ...request;
@@ -190,11 +241,11 @@ Warp
   .execute();
 ----
 
-Note that identifiers (`id1`, `id2`) are optional, they serve just for purpose of identification of a group in a result.
+Note that identifiers (`id1`, `id2`) are optional, they serve just a purpose of identification of a group in a result.
 
 Don't forget to use `.execute()` at the end of a Warp specification - it ends a specification and starts Warp execution process.
 
-Note that observers needs to be used for each of a group, since no request can be belong to more than one group.
+Note that observers needs to be used for each of a group, since no request can belong to more than one group.
 
 ==== Multiple Requests per Group
 
@@ -259,10 +310,10 @@ An initiated request can be inspected during its execution using
 
 An `Inspection` object 
 
-* is serialized on a client and sent to a server.
+* is serialized on a client and sent to a server
 * can bear a payload
 * can contain lifecycle hooks which triggers verification logic
-* can be enriched with dependency injection
+* can be enriched using dependency injection
 
 === Lifecycle Hooks
 
@@ -328,7 +379,7 @@ Warp
   });
 ----
 
-==== Dependencies Specific for Servlets
+==== Dependencies Specific to Servlets
 
 Following resources can be injected using @ArquillianResource:
 
@@ -339,19 +390,31 @@ Following resources can be injected using @ArquillianResource:
 | HttpServletResponse
 |===
 
-==== Dependencies Specific for JavaServer Faces
+==== Dependencies Specific to JavaServer Faces
 
 Following resources can be injected using @ArquillianResource:
 
 |===
 | FacesContext
 | Application
-| ...
+| ExternalContext
+| PartialViewContext
+| ELContext
+| ELResolver
+| ExpressionFactory
+| ViewHandler
+| NavigationHandler
+| ResourceHandler
+| ExceptionHandler
+| Flash
+| RenderKit
+| UIViewRoot
+| StateManager
 |===
 
 === Payload
 
-Since an `Inspection` is a serializable object, it can contain a serializable payload which can be transfered with a request to a server, where it can be used as a base for verification logic, for example:
+Since an `Inspection` is a serializable object, it can contain a serializable payload which can be transfered with a request to a server, where it can be used as a base for a verification, for example:
 
 * contain an object which will be use to initialize UI
 
@@ -382,27 +445,27 @@ The `Inspection` object has to follow just one contract in order to be transfera
 
 Note: Keep in mind that `Inspection` will be deployed to the server VM, so during its invocation, you can use only APIs available on server-side.
 
-You can add desired APIs to the deployment and make them available to a deployment, but you should avoid exposing unwanted APIs to server (e.g. client-side testing tools such as WebDriver).
+You can add desired APIs to the deployment and make them available to the server VM, but you should avoid exposing unwanted APIs to the server (e.g. API of client-side testing tools such as WebDriver).
 
 The execution of an inspection may lead into `ClassNotFoundException` or `LinkageError` if you won't stay compliant with this requirement.
 
 ==== Serializability of Anonymous/Inner Inspections
 
-The anonymous and inner classes can be used as inspections thanks to transformation process which removes the binding from an non-static inner classes to a top-level classes.
+The anonymous and inner classes can be used as inspections thanks to transformation process which removes the binding from an non-static inner classes to top-level classes.
 
 Keep in mind:
 
 * you should not store an reference to an field in a top-level class
-* the state of an inspection is serialized and thus its mutations on a server are not directly exposed to the client's objects
-
+* the state of an inspection is serialized and thus its mutations on a server are not directly exposed to the client
 
 == Debugging Warp
 
 In order to debug Warp execution effectively, one needs to know few facts:
 
 * Warp tries to provide as much as context during its failures as possible
-** if you are not provided with a context of a failure, it needs to be enhanced and should be reported
-* the client-side execution can be debugged by usual tools
+** (if you are not provided with a context of a failure, let's report it)
+* the client-side execution can be debugged by usual approaches
+* the server-side execution can be debugged by usual approaches
 * Arquillian's debug output can reveal issues
 
 === Arquillian Debugging Mode
@@ -411,7 +474,7 @@ In order to debug the tests effectively, one can reveal their internals by switc
 
 just pass `-Darquillian.debug=true` to the test and application server VM.
 
-It will show you event-execution tree which exposes you:
+It will show event tree in a console which exposes you:
 
 * what events are happening during test execution
 * what requests/responses were registered by Warp
@@ -420,11 +483,11 @@ It will show you event-execution tree which exposes you:
 
 === Debug Warp and WebDriver
 
-In order to debug Warp's use with WebDriver, it's good approach to use developer tools/extensions provided by browsers, such as:
+In order to debug Warp's used together with WebDriver, one can use developer tools provided by browsers, such as:
 
 * Chrome Developer Tools
 * Firefox Developer Tools / Firebug
-* IE 
+* IE Developer Tools
 * Opera Dragonfly
 
 and their ability to analyze Network traffic.
@@ -433,19 +496,19 @@ Refer to Graphene Reusable Session for best practices how to develop with WebDri
 
 == Architecture
 
-=== Warp Request Processing Lifecycle
+=== Warp Request Processing
 
-In order to hook into client-to-server communication, Warp puts a proxy server between them as illustrated on a image bellow.
+In order to hook into client-to-server communication, Warp puts a HTTP proxy in between as illustrated on a image bellow.
 
 TODO diagram
 
-This proxy observes request incoming from the client and then enhances the request with the payload required for server's inspection (processed reffered to as piggy-backing on the request).
+This proxy observes requests incoming from a client and then enhances a request with a payload required for a server inspection (processed reffered to as "piggy-backing on a request").
 
-Once the enhanced request enters a server, it is blocked by request filter and the description of inspection is registered in Arquillian system. The Warp's filter then handles the processing to the traditional request processing.
+Once an enhanced request enters a server, it is blocked by a request filter and an inspection is registered into an Arquillian system. The Warp's filter then handles the processing to the traditional request processing.
 
-During a requst processing lifecycle, the Warp listens for appropriate callbacks and as a response, it can execute arbitrary actions which inspects a state of the request context.
+During a requst processing lifecycle, the Warp listens for appropriate lifecycle hooks and as a response, it can execute arbitrary actions which inspects a state of the request context.
 
-To help with the full-featured verification, Warp's inspection process can leverage Arquillian's dependency injection system.
+To help with a full-featured verification, a Warp's inspection process can leverage Arquillian's dependency injection system.
 
 Once the request is processed by the server, leading into committing response, Warp can collect a result of inspection and enhance a built response to the client (again using piggy-backing method).
 
