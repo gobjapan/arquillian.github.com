@@ -361,7 +361,7 @@ In order to test server-side state effectively, the `Inspection` can be enriched
 * `@Inject` for CDI beans
 * `@EJB` for EJB beans
 * `@ArquillianResource` for Arquillian Resources
-* `@ManagedProperty("#{expression}")` for JSF managed beans and other objects accessible through Expression Language
+* `@ManagedProperty("#{expression}")` for beans from Expression Language context (JSF)
 
 The injection can be either class-level or method-level:
 
@@ -373,12 +373,17 @@ Warp
     @ArquillianResource
     private HttpServletRequest request;
 
-    @BeforeServlet
-    public void verifyRequest(@CurrentUser User user, ) {
+    @ManagedProperty("#{user.friends}")
+    private Set<User> friends;
+
+    @AfterPhase(INVOKE_APPLICATION)
+    public void verifyRequest(@CurrentUser User user) {
       ...
     }
   });
 ----
+
+As you can see in a sample above, CDI beans can be injected on method-level even though you don't specify `@Inject`.
 
 ==== Dependencies Specific to Servlets
 
