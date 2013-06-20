@@ -361,6 +361,7 @@ In order to test server-side state effectively, the `Inspection` can be enriched
 * `@Inject` for CDI beans
 * `@EJB` for EJB beans
 * `@ArquillianResource` for Arquillian Resources
+* `@ManagedProperty("#{expression}")` for JSF managed beans and other objects accessible through Expression Language
 
 The injection can be either class-level or method-level:
 
@@ -384,10 +385,8 @@ Warp
 Following resources can be injected using @ArquillianResource:
 
 |===
-| ServletRequest
-| ServletResponse
-| HttpServletRequest
-| HttpServletResponse
+| ServletRequest     | HttpServletRequest
+| ServletResponse  | HttpServletResponse
 |===
 
 ==== Dependencies Specific to JavaServer Faces
@@ -395,21 +394,11 @@ Following resources can be injected using @ArquillianResource:
 Following resources can be injected using @ArquillianResource:
 
 |===
-| FacesContext
-| Application
-| ExternalContext
-| PartialViewContext
-| ELContext
-| ELResolver
-| ExpressionFactory
-| ViewHandler
-| NavigationHandler
-| ResourceHandler
-| ExceptionHandler
-| Flash
-| RenderKit
-| UIViewRoot
-| StateManager
+| FacesContext  | Application  | ExternalContext
+| PartialViewContext  | ELContext  | ELResolver
+| ExpressionFactory  | ViewHandler  | NavigationHandler
+| ResourceHandler  | ExceptionHandler  | Flash
+| RenderKit  | UIViewRoot  | StateManager
 |===
 
 === Payload
